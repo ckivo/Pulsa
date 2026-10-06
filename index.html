@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pulse</title>
+<!-- Installable app (PWA) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#16171a">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pulse">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Wallpaper: painted coastal scene. Set WALLPAPER_URL in the script to use your own photo. -->
+  <div class="wallpaper" aria-hidden="true">
+    <svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="wpSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#EEE5DC" />
+          <stop offset="0.55" stop-color="#E3D7CC" />
+          <stop offset="0.66" stop-color="#D5CAC1" />
+        </linearGradient>
+        <linearGradient id="wpSea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#B7BCBD" />
+          <stop offset="0.45" stop-color="#8A969B" />
+          <stop offset="1" stop-color="#55646B" />
+        </linearGradient>
+        <linearGradient id="wpGlass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#3A3835" />
+          <stop offset="1" stop-color="#1D1C1A" />
+        </linearGradient>
+        <filter id="wpSoft"><feGaussianBlur stdDeviation="10" /></filter>
+        <filter id="wpFoam"><feGaussianBlur stdDeviation="6" /></filter>
+      </defs>
+
+      <rect width="1600" height="1000" fill="url(#wpSky)" />
+      <path d="M0 640 L1600 612 L1600 1000 L0 1000 Z" fill="url(#wpSea)" />
+      <rect x="0" y="590" width="1600" height="60" fill="#FFFFFF" opacity="0.22" filter="url(#wpSoft)" />
+
+      <!-- Waves -->
+      <g fill="none" stroke="#FFFFFF" stroke-linecap="round" opacity="0.35">
+        <path d="M980 720 q60 -14 120 -4 t140 -2 t150 4" stroke-width="3" />
+        <path d="M900 790 q80 -22 170 -8 t180 -6 t200 10" stroke-width="4" />
+        <path d="M1020 860 q90 -26 190 -10 t200 -4" stroke-width="5" />
+      </g>
+      <g fill="#FFFFFF" opacity="0.55" filter="url(#wpFoam)">
+        <ellipse cx="1320" cy="800" rx="200" ry="22" />
+        <ellipse cx="1180" cy="880" rx="150" ry="18" />
+        <ellipse cx="1480" cy="900" rx="140" ry="26" />
+      </g>
+
+      <!-- Cliff -->
+      <path d="M560 1000 L590 860 L660 800 L760 812 L840 770 L930 800 L1000 860 L1060 1000 Z" fill="#3B3631" />
+      <path d="M660 800 L700 880 L690 1000 M840 770 L860 860 L830 1000 M930 800 L950 900" stroke="#5A5149" stroke-width="10" fill="none" opacity="0.6" />
+
+      <!-- Foreground grass -->
+      <path d="M0 1000 L0 770 Q180 750 360 790 Q540 830 700 1000 Z" fill="#2A3025" />
+
+      <!-- Concrete house -->
+      <rect x="0" y="250" width="320" height="72" fill="#9B968F" />
+      <rect x="0" y="322" width="64" height="200" fill="#7E7973" />
+      <rect x="64" y="322" width="256" height="200" fill="url(#wpGlass)" />
+      <rect x="150" y="440" width="46" height="70" fill="#141312" opacity="0.8" />
+      <rect x="0" y="522" width="420" height="36" fill="#8C8781" />
+      <rect x="300" y="558" width="120" height="320" fill="#857F79" />
+      <rect x="0" y="680" width="440" height="30" fill="#96918A" />
+
+      <!-- Tree -->
+      <path d="M205 520 C200 420 170 330 185 200 C190 150 170 110 150 70" stroke="#1C1F19" stroke-width="11" fill="none" />
+      <path d="M185 260 C230 230 260 220 300 222 M180 330 C140 300 100 300 70 310" stroke="#1C1F19" stroke-width="6" fill="none" />
+      <g fill="#1F241D">
+        <ellipse cx="150" cy="60" rx="140" ry="55" />
+        <ellipse cx="60" cy="120" rx="110" ry="45" />
+        <ellipse cx="270" cy="120" rx="120" ry="40" />
+        <ellipse cx="310" cy="205" rx="80" ry="26" />
+        <ellipse cx="80" cy="300" rx="70" ry="22" />
+        <ellipse cx="30" cy="200" rx="60" ry="40" />
+      </g>
+    </svg>
+    <div class="wallpaper-photo" id="wallpaperPhoto"></div>
+  </div>
+
+  <div class="app" id="app">
+
+    <!-- Sidebar (bottom tab bar on mobile) -->
+    <aside class="sidebar">
+      <div class="side-logo" aria-hidden="true">
+        <svg viewBox="0 0 736 736" aria-hidden="true"><g fill="currentColor"><polygon points="292,281 292,320 214,358 292,397 292,445 146,367 146,350" /><polygon points="391,257 425,257 347,485 313,485" /><polygon points="454,281 600,350 600,367 454,445 454,397 532,358 454,320" /></g></svg>
+      </div>
+      <nav class="side-nav" aria-label="Sections">
+        <button type="button" class="side-item active" data-cat="home" aria-label="Home">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4.5 10.5L12 4.5l7.5 6V19a1.5 1.5 0 01-1.5 1.5h-3.5v-6h-5v6H6A1.5 1.5 0 014.5 19z" /></svg>
+          <span class="side-label">Home</span>
+        </button>
+        <button type="button" class="side-item" data-cat="journals" aria-label="Journals">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M5.5 4.5h10a2 2 0 012 2V20h-10a2 2 0 01-2-2z" /><path d="M5.5 17.5a2 2 0 012-2h10" /><path d="M9 8.5h5" /></svg>
+          <span class="side-label">Journals</span>
+        </button>
+        <button type="button" class="side-item" data-cat="money" aria-label="Money">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4.5 8V7a2 2 0 012-2H17v3" /><rect x="4" y="8" width="16" height="11" rx="2.5" /><path d="M15.5 13.5h2" /></svg>
+          <span class="side-label">Money</span>
+        </button>
+        <button type="button" class="side-item" data-cat="health" aria-label="Health">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0112 7a4.2 4.2 0 017.5 2.5c0 5.6-7.5 10-7.5 10z" /><path d="M7.5 12.5h2.5l1.5-2.5 2 4.5 1.5-2h1.5" /></svg>
+          <span class="side-label">Health</span>
+        </button>
+        <button type="button" class="side-item side-more" id="sideMore" aria-label="More pages" aria-haspopup="dialog">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" /></svg>
+          <span class="side-label">More</span>
+        </button>
+      </nav>
+      <!-- Page icons (used by the category menus and tabs) -->
+      <div class="page-icons" id="pageIcons" hidden>
+        <button type="button" class="pi" data-page="dashboard" aria-label="Dashboard">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="4" width="4" height="13" rx="1" /><rect x="10" y="4" width="4" height="8" rx="1" /><rect x="16" y="4" width="4" height="10" rx="1" /></svg>
+          <span class="side-label">Dashboard</span>
+        </button>
+        <button type="button" class="pi" data-page="trades" aria-label="Trades">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 17l5-5 4 4 7-8" /><path d="M15 8h5v5" /></svg>
+          <span class="side-label">Trades</span>
+        </button>
+        <button type="button" class="pi" data-page="mental" aria-label="Mental">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 20c-4 0-7-2.6-7-6.2 2.6 0 5 1 7 3.1 2-2.1 4.4-3.1 7-3.1 0 3.6-3 6.2-7 6.2z" /><path d="M12 16.9c-1.6-2.1-2.1-4.8 0-9.4 2.1 4.6 1.6 7.3 0 9.4z" /></svg>
+          <span class="side-label">Mental</span>
+        </button>
+        <button type="button" class="pi" data-page="finance" aria-label="Finance">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4.5 8V7a2 2 0 012-2H17v3" /><rect x="4" y="8" width="16" height="11" rx="2.5" /><path d="M15.5 13.5h2" /></svg>
+          <span class="side-label">Finance</span>
+        </button>
+        <button type="button" class="pi" data-page="nutrition" aria-label="Nutrition">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 7.5c-1.6-1.4-4.6-1.6-6 .6-1.5 2.4-.6 6.6 1.6 9.3 1.2 1.5 2.4 2.3 3.4 1.8.6-.3.8-.3 1 0 1 .5 2.2-.3 3.4-1.8 2.2-2.7 3.1-6.9 1.6-9.3-1.4-2.2-4.4-2-6-.6z" /><path d="M12 7.5c0-2 1-3.5 3-4" /></svg>
+          <span class="side-label">Nutrition</span>
+        </button>
+        <button type="button" class="pi" data-page="gym" aria-label="Training">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6.5 8v8M17.5 8v8M3.5 10v4M20.5 10v4M6.5 12h11" /></svg>
+          <span class="side-label">Training</span>
+        </button>
+        <button type="button" class="pi" data-page="peptides" aria-label="Peptides">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 3.5h6M10 3.5v3M14 3.5v3" /><rect x="7.5" y="6.5" width="9" height="14" rx="2.5" /><path d="M7.5 13.5h9" /><path d="M10.5 16.5h3" /></svg>
+          <span class="side-label">Peptides</span>
+        </button>
+        <button type="button" class="pi" data-page="review" aria-label="Daily review">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" /><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6L18 18M6 18l1.4-1.4M16.6 7.4L18 6" /></svg>
+          <span class="side-label">Daily review</span>
+        </button>
+      </div>
+
+      <button type="button" class="side-expand side-settings" id="sideSettings" aria-label="Settings">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" /></svg>
+        <span class="side-label">Settings</span>
+      </button>
+      <button type="button" class="side-expand" id="sideExpand" aria-label="Expand sidebar">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 7l5 5-5 5M13 7l5 5-5 5" /></svg>
+        <span class="side-label" id="sideExpandLabel">Expand</span>
+      </button>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <label class="search" data-only="dashboard">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
+          <input type="search" id="searchInput" placeholder="Search goals" autocomplete="off">
+        </label>
+        <div class="topbar-page" data-only="trades mental review finance nutrition gym peptides" id="topbarPage"></div>
+        <div class="topbar-actions">
+          <button type="button" class="icon-btn privacy-btn topbar-eye" aria-pressed="false" title="Hide amounts (privacy mode)"></button>
+          <button type="button" class="btn-new" id="newGoalBtn" data-only="dashboard" title="New goal">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            <span>New goal</span>
+          </button>
+          <button type="button" class="btn-ghost" id="scanMealBtn" data-only="nutrition" title="Scan a meal photo">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 015.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0120 8.5v9a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 17.5z" /><circle cx="12" cy="12.5" r="3.5" /></svg>
+            <span>Scan meal</span>
+          </button>
+          <button type="button" class="btn-new" id="addFoodBtn" data-only="nutrition" title="Add food">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            <span>Add food</span>
+          </button>
+          <button type="button" class="btn-new" id="newTradeBtn" data-only="trades" title="New trade entry">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            <span>New entry</span>
+          </button>
+          <button type="button" class="btn-new" id="newMentalBtn" data-only="mental" title="New journal entry">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            <span>New entry</span>
+          </button>
+          <button type="button" class="btn-new" id="newReviewBtn" data-only="review" title="Review today">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            <span>Review today</span>
+          </button>
+          <button type="button" class="btn-ghost" id="importCsvBtn" data-only="finance" title="Import bank CSV">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 15v3.5A1.5 1.5 0 006.5 20h11a1.5 1.5 0 001.5-1.5V15" /></svg>
+            <span>Import CSV</span>
+          </button>
+          <input type="file" id="finImportFile" accept=".csv,text/csv" hidden>
+          <button type="button" class="btn-new" id="addTxnBtn" data-only="finance" title="Add transaction">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            <span>Add transaction</span>
+          </button>
+          <button type="button" class="btn-new" id="logWeightBtn" data-only="gym" title="Log weight">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            <span>Log weight</span>
+          </button>
+          <button type="button" class="btn-ghost" id="pepCalcBtn" data-only="peptides" title="Reconstitution calculator">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.5" /><path d="M8.5 7.5h7M8.5 12h1M11.5 12h1M14.5 12h1M8.5 15.5h1M11.5 15.5h1M14.5 15.5h1" /></svg>
+            <span>Calculator</span>
+          </button>
+          <button type="button" class="btn-new" id="addPeptideBtn" data-only="peptides" title="Add a peptide">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            <span>Add peptide</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="main-scroll" id="mainScroll">
+       <!-- Category header: name + tabs for the pages inside it (filled by script) -->
+       <div class="cat-bar" id="catBar"></div>
+       <div class="page" data-page="dashboard">
+        <div class="title-row" id="top">
+          <h1 class="dash-title" id="dashGreeting">Good morning</h1>
+          <div class="seg" role="group" aria-label="View">
+            <button type="button" data-view="board" class="active">Board</button>
+            <button type="button" data-view="list">List</button>
+          </div>
+        </div>
+        <!-- "Tomorrow's one focus" from last night's Daily review -->
+        <button type="button" class="focus-banner" id="focusBanner" hidden></button>
+        <!-- Phones have no top bar, so goal search lives here -->
+        <div class="page-tools mobile-only">
+          <label class="search">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
+            <input type="search" id="searchInputMobile" placeholder="Search goals" autocomplete="off">
+          </label>
+        </div>
+
+        <!-- Day line counter -->
+        <section class="column day-line" id="dayColumn">
+          <div class="dl-top">
+            <div class="dl-left">
+              <span class="dl-phase" id="dayPhase">—</span>
+              <span class="dl-status" id="dayStatus">—</span>
+            </div>
+            <div class="dl-right">
+              <span class="dl-meta dl-remaining" id="dayRemaining">—</span>
+              <span class="dl-meta dl-clock" id="dayClock">--:--</span>
+              <span class="dl-pct" id="dayPct">—</span>
+            </div>
+          </div>
+          <div class="dl-track" title="Awake window">
+            <div class="dl-fill" id="dayLineFill"></div>
+            <div class="dl-now" id="dayNow" hidden></div>
+          </div>
+          <div class="dl-ticks" id="dayTicks" aria-hidden="true"></div>
+        </section>
+
+        <!-- Goal Ticker -->
+        <div class="ticker-row">
+          <div class="goal-ticker" id="goalTicker" aria-live="polite" aria-atomic="true">
+            <div class="goal-ticker-led"><span class="goal-ticker-led-dot"></span></div>
+            <div class="goal-ticker-label">GOALS</div>
+            <div class="goal-ticker-stage" id="goalTickerStage">
+              <div class="goal-ticker-row">
+                <span class="goal-ticker-status" data-status="">—</span>
+                <span class="goal-ticker-text">Loading…</span>
+              </div>
+            </div>
+            <div class="goal-ticker-meta" id="goalTickerMeta">0/0</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">Overview</h2>
+
+          <div class="board" id="board">
+
+            <!-- TODAY -->
+            <section class="column gm-card" id="gmTodayCard">
+              <header class="col-head">
+                <span class="col-title">Today</span>
+                <span class="col-count" id="todayCount">0</span>
+                <button type="button" class="col-icon" id="clearDoneBtn" title="Clear completed goals">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+                </button>
+              </header>
+
+              <div class="col-summary">
+                <div>
+                  <div class="gm-eyebrow" id="todayLabel">Today</div>
+                  <div class="gm-progress-row">
+                    <span class="gm-progress-num" id="gmProgressNum">0</span>
+                    <span class="gm-progress-total" id="gmProgressTotal">/ 0</span>
+                    <span class="gm-progress-label" id="gmProgressLabel">no goals yet</span>
+                  </div>
+                </div>
+                <div class="gm-streak" id="gmStreak">
+                  <span class="gm-streak-bolt"><svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.5L5 13.5h6l-1 8 8-11h-6l1-8z"/></svg></span>
+                  <span class="gm-streak-num" id="gmStreakNum">0</span>
+                  <span class="gm-streak-label">day streak</span>
+                </div>
+              </div>
+
+              <div class="gm-bar" id="gmBar"></div>
+
+              <ul id="goalList" class="goal-list gm-list"></ul>
+              <div id="emptyState" class="empty-state" data-default="No goals for today yet — add one below.">No goals for today yet — add one below.</div>
+
+              <div class="composer" id="todayComposer">
+                <button type="button" class="col-add">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                  Add new goal
+                </button>
+                <div class="composer-form goal-input-wrap gm-input-wrap">
+                  <input type="text" id="goalInput" class="goal-input" placeholder="Add a goal for today…" autocomplete="off">
+                  <div class="composer-actions">
+                    <button type="button" id="goalAddBtn" class="btn-primary">+ Add</button>
+                    <button type="button" id="goalPolishBtn" class="btn-secondary">✦ Polish</button>
+                  </div>
+                </div>
+              </div>
+              <div class="polish-status" id="polishStatus"></div>
+            </section>
+
+            <!-- MONTHLY P&L / WIN RATE -->
+            <section class="column ov-card" id="pnlCard">
+              <header class="col-head">
+                <span class="col-title">Trading</span>
+                <span class="col-count" id="pnlMonthLabel">—</span>
+                <button type="button" class="col-icon go-btn" data-goto="trades" title="Open Trades">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" /></svg>
+                </button>
+              </header>
+              <div class="ov-hero">
+                <div class="gm-eyebrow">Monthly P&amp;L</div>
+                <div class="ov-big" id="pnlNet">$0</div>
+              </div>
+              <div class="ov-stats">
+                <div>
+                  <div class="gm-eyebrow">Win rate</div>
+                  <div class="ov-mid" id="pnlWinRate">—</div>
+                  <div class="ov-sub" id="pnlWL">0W · 0L</div>
+                </div>
+                <div>
+                  <div class="gm-eyebrow">Days traded</div>
+                  <div class="ov-mid" id="pnlDays">0</div>
+                  <div class="ov-sub" id="pnlJournals">0 journals</div>
+                </div>
+                <div>
+                  <div class="gm-eyebrow">Best day</div>
+                  <div class="ov-mid" id="pnlBest">—</div>
+                </div>
+              </div>
+              <div class="meter ov-meter" title="Win rate"><div class="meter-fill meter-done" id="pnlWinBar"></div></div>
+              <div class="gm-eyebrow ov-chart-label">Daily P&amp;L</div>
+              <div class="ov-chart" id="pnlChart"></div>
+            </section>
+
+            <!-- NUTRITION MACROS / TODAY'S WORKOUT -->
+            <section class="column ov-card" id="macroCard">
+              <header class="col-head">
+                <div class="seg seg-sm ov-tabs" role="tablist" aria-label="Card view">
+                  <button type="button" role="tab" data-ovtab="nutrition">Nutrition</button>
+                  <button type="button" role="tab" data-ovtab="workout">Workout</button>
+                </div>
+                <span class="col-count" id="dashFoodCount">0</span>
+                <button type="button" class="col-icon go-btn" id="macroGo" data-goto="nutrition" title="Open Nutrition">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" /></svg>
+                </button>
+              </header>
+              <div class="ov-workout" id="dashWorkout" hidden></div>
+              <div id="dashNutrition">
+              <div class="ov-hero">
+                <div class="gm-eyebrow">Calories</div>
+                <div class="kcal-row">
+                  <span class="kcal-num" id="dashKcal">0</span>
+                  <span class="kcal-target">/ <span id="dashKcalTarget">—</span> kcal</span>
+                </div>
+                <div class="meter meter-lg"><div class="meter-fill meter-kcal" id="dashKcalBar"></div></div>
+                <div class="kcal-left" id="dashKcalLeft">—</div>
+              </div>
+              <div class="macro-list ov-macros" id="dashMacros"></div>
+              <button type="button" class="col-add" data-goto="nutrition">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                Log food
+              </button>
+              </div>
+            </section>
+
+          </div>
+        </div>
+       </div>
+
+       <!-- ================= TRADES ================= -->
+       <div class="page" data-page="trades" hidden>
+        <div class="title-row"><h1 class="dash-title">Trades</h1></div>
+        <section class="column biz-card" id="tradeBiz"></section>
+        <div class="journal" id="tradesJournal"></div>
+       </div>
+
+       <!-- ================= MENTAL ================= -->
+       <div class="page" data-page="mental" hidden>
+        <div class="title-row"><h1 class="dash-title">Mental</h1></div>
+        <div class="journal" id="mentalJournal"></div>
+       </div>
+
+       <!-- ================= DAILY REVIEW ================= -->
+       <div class="page" data-page="review" hidden>
+        <div class="title-row"><h1 class="dash-title">Daily review</h1></div>
+        <div class="page-tools mobile-only">
+          <button type="button" class="btn-primary" id="newReviewBtnMobile">+ Review today</button>
+        </div>
+        <div class="journal" id="reviewJournal"></div>
+       </div>
+
+       <!-- ================= FINANCE ================= -->
+       <div class="page" data-page="finance" hidden>
+        <div class="title-row">
+          <h1 class="dash-title">Finance</h1>
+          <span class="page-date" id="finMonth"></span>
+          <div class="title-tools">
+            <button type="button" class="icon-btn privacy-btn" aria-pressed="false" title="Hide amounts (privacy mode)"></button>
+            <button type="button" class="btn-ghost btn-xs fin-lock-btn" id="finLockBtn" title="Lock Finance now">Lock</button>
+          </div>
+        </div>
+        <div class="page-tools mobile-only">
+          <button type="button" class="btn-secondary" id="importCsvBtnMobile">Import bank CSV</button>
+        </div>
+        <div class="jr-stats" id="finStats"></div>
+        <div class="fin-grid">
+          <div class="stack">
+            <section class="column" id="finAccounts"></section>
+            <section class="column" id="finInvest"></section>
+          </div>
+          <div class="stack">
+            <section class="column" id="finSpend"></section>
+          </div>
+          <div class="stack">
+            <section class="column" id="finLive"></section>
+            <section class="column" id="finUpcoming"></section>
+            <section class="column" id="finSubs"></section>
+          </div>
+        </div>
+       </div>
+
+       <!-- ================= NUTRITION ================= -->
+       <div class="page" data-page="nutrition" hidden>
+        <div class="title-row">
+          <h1 class="dash-title">Nutrition</h1>
+          <span class="page-date" id="nutriDate"></span>
+        </div>
+
+        <section class="column nutri-summary">
+          <div class="kcal-block">
+            <div class="gm-eyebrow">Calories</div>
+            <div class="kcal-row">
+              <span class="kcal-num" id="kcalNum">0</span>
+              <span class="kcal-target">/ <span id="kcalTarget">2,200</span> kcal</span>
+            </div>
+            <div class="meter meter-lg"><div class="meter-fill meter-kcal" id="kcalBar"></div></div>
+            <div class="kcal-left" id="kcalLeft">—</div>
+          </div>
+          <div class="macro-list" id="macroList"></div>
+          <button type="button" class="col-icon targets-btn" id="editTargetsBtn" title="Edit daily targets">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></svg>
+          </button>
+          <form class="targets-form" id="targetsForm" hidden>
+            <label class="field"><span class="field-label">Calories</span><input class="goal-input sm" type="number" min="0" step="any" name="kcal"></label>
+            <label class="field"><span class="field-label">Protein g</span><input class="goal-input sm" type="number" min="0" step="any" name="p"></label>
+            <label class="field"><span class="field-label">Carbs g</span><input class="goal-input sm" type="number" min="0" step="any" name="c"></label>
+            <label class="field"><span class="field-label">Fat g</span><input class="goal-input sm" type="number" min="0" step="any" name="f"></label>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save targets</button>
+              <button type="button" class="btn-secondary" id="targetsCancel">Cancel</button>
+            </div>
+          </form>
+        </section>
+
+        <div class="nutri-grid">
+          <div class="stack">
+            <!-- Photo scan -->
+            <section class="column" id="photoPanel">
+              <header class="col-head">
+                <span class="col-title">Scan a meal</span>
+                <span class="col-hint">Photo → macros</span>
+              </header>
+              <label class="dropzone" id="dropzone">
+                <input type="file" accept="image/*" id="mealPhoto" class="visually-hidden">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 015.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0120 8.5v9a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 17.5z" /><circle cx="12" cy="12.5" r="3.5" /></svg>
+                <span class="dz-title">Snap or drop a photo of your meal</span>
+                <span class="dz-sub">Claude estimates each food's macros — you can adjust before logging.</span>
+              </label>
+              <div class="photo-work" id="photoWork" hidden>
+                <img id="photoPreview" alt="Meal photo preview">
+                <div class="photo-side">
+                  <input type="text" class="goal-input sm" id="photoNote" placeholder="Anything hidden? e.g. cooked in butter, 2 eggs" autocomplete="off">
+                  <div class="form-actions">
+                    <button type="button" class="btn-primary" id="analyzeBtn">✦ Estimate macros</button>
+                    <button type="button" class="btn-secondary" id="photoCancel">Cancel</button>
+                  </div>
+                </div>
+              </div>
+              <div class="polish-status" id="photoStatus"></div>
+              <div class="estimate" id="estimate" hidden>
+                <div class="est-head">
+                  <span>Food</span><span>kcal</span><span>P</span><span>C</span><span>F</span><span></span>
+                </div>
+                <div id="estimateRows"></div>
+                <div class="est-notes" id="estimateNotes"></div>
+                <div class="est-total" id="estimateTotal"></div>
+                <div class="form-actions">
+                  <select class="goal-input sm meal-select" id="estimateMeal"></select>
+                  <button type="button" class="btn-primary" id="estimateAdd">Add to log</button>
+                  <button type="button" class="btn-secondary" id="estimateDiscard">Discard</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Search / manual add -->
+            <section class="column" id="searchPanel">
+              <header class="col-head">
+                <span class="col-title">Add food</span>
+              </header>
+              <label class="search food-search">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
+                <input type="search" id="foodSearch" placeholder="Search foods — e.g. greek yogurt" autocomplete="off">
+              </label>
+              <div class="food-results" id="foodResults"></div>
+
+              <form class="food-editor" id="foodEditor" hidden>
+                <label class="field span-2"><span class="field-label">Food</span><input class="goal-input sm" name="name" required autocomplete="off"></label>
+                <label class="field span-2"><span class="field-label">Serving</span><input class="goal-input sm" name="serving" placeholder="e.g. 1 cup (240 ml)" autocomplete="off"></label>
+                <label class="field"><span class="field-label">Servings</span><input class="goal-input sm" type="number" name="qty" min="0.05" step="any" value="1"></label>
+                <label class="field"><span class="field-label">Meal</span><select class="goal-input sm meal-select" name="meal"></select></label>
+                <div class="field-group span-2">
+                  <span class="field-label">Per serving</span>
+                  <div class="macro-inputs">
+                    <label><input class="goal-input sm" type="number" min="0" step="any" name="kcal"><span>kcal</span></label>
+                    <label><input class="goal-input sm" type="number" min="0" step="any" name="p"><span>Protein g</span></label>
+                    <label><input class="goal-input sm" type="number" min="0" step="any" name="c"><span>Carbs g</span></label>
+                    <label><input class="goal-input sm" type="number" min="0" step="any" name="f"><span>Fat g</span></label>
+                  </div>
+                </div>
+                <div class="editor-preview span-2" id="editorPreview"></div>
+                <div class="form-actions span-2">
+                  <button type="submit" class="btn-primary">Add to log</button>
+                  <button type="button" class="btn-secondary" id="editorCancel">Cancel</button>
+                </div>
+              </form>
+
+              <button type="button" class="col-add" id="customFoodBtn">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                Custom food
+              </button>
+            </section>
+          </div>
+
+          <!-- Daily log -->
+          <section class="column" id="logPanel">
+            <header class="col-head">
+              <span class="col-title">Today's log</span>
+              <span class="col-count" id="foodCount">0</span>
+            </header>
+            <div id="mealGroups"></div>
+          </section>
+        </div>
+
+        <!-- Recipe finder: ingredients + goal → TikTok recipes -->
+        <section class="column recipe-card" id="recipePanel">
+          <header class="col-head">
+            <span class="col-title">Find a recipe</span>
+            <span class="col-hint">From TikTok · fits your goal</span>
+          </header>
+          <div class="recipe-form">
+            <div class="field">
+              <span class="field-label">Ingredients you have</span>
+              <div class="pantry" id="pantry">
+                <input type="text" class="pantry-input" id="pantryInput" placeholder="Type an ingredient, press Enter — e.g. chicken, rice, eggs" autocomplete="off">
+              </div>
+            </div>
+            <div class="field">
+              <span class="field-label">What kind of meal?</span>
+              <div class="recipe-goals" id="recipeGoals" role="radiogroup" aria-label="Meal type"></div>
+            </div>
+            <div class="recipe-actions">
+              <select class="goal-input sm meal-select" id="recipeMeal" aria-label="Meal"></select>
+              <label class="recipe-fit"><input type="checkbox" id="recipeFit" checked> Fit what’s left of today’s macros</label>
+              <button type="button" class="btn-primary" id="recipeFindBtn">✦ Find TikTok recipes</button>
+              <a class="btn-secondary recipe-tt-link" id="recipeTikTokLink" target="_blank" rel="noopener">Search TikTok ↗</a>
+            </div>
+          </div>
+          <div class="polish-status" id="recipeStatus"></div>
+          <div class="recipe-results" id="recipeResults"></div>
+
+          <div class="liked-section">
+            <div class="field-label">Meals I liked</div>
+            <div class="liked-sub">Paste a TikTok you liked — Claude makes its own version with your ingredients, seasoned properly.</div>
+            <form class="liked-add" id="likedAdd">
+              <input type="url" class="goal-input sm" name="url" placeholder="https://www.tiktok.com/@…/video/…" autocomplete="off" required>
+              <input type="text" class="goal-input sm" name="note" placeholder="What you liked (optional) — e.g. the crispy garlic chicken" autocomplete="off">
+              <button type="submit" class="btn-secondary">Add</button>
+            </form>
+            <ul class="liked-list" id="likedList"></ul>
+          </div>
+        </section>
+
+        <div class="plan-grid">
+          <!-- Meal plan: a week of meals built from your recipes, goal and macro targets -->
+          <section class="column" id="planPanel">
+            <header class="col-head">
+              <span class="col-title">Meal plan</span>
+              <span class="col-hint" id="planHint">Cook in batches, hit your macros</span>
+            </header>
+            <div class="plan-setup" id="planSetup">
+              <div class="field">
+                <span class="field-label">Days</span>
+                <div class="seg seg-sm" id="planDays" role="group" aria-label="Days">
+                  <button type="button" data-days="3">3</button>
+                  <button type="button" data-days="5">5</button>
+                  <button type="button" data-days="7">7</button>
+                </div>
+              </div>
+              <div class="field">
+                <span class="field-label">Meals to plan</span>
+                <div class="plan-meals" id="planMeals"></div>
+              </div>
+              <div class="plan-setup-actions">
+                <button type="button" class="btn-primary" id="planMakeBtn">✦ Plan my meals</button>
+              </div>
+              <div class="plan-note">Uses your ingredients, meal type and daily targets from above, plus any recipes you’ve made from TikToks you liked.</div>
+            </div>
+            <div class="polish-status" id="planStatus"></div>
+            <div id="planView"></div>
+          </section>
+
+          <!-- Shopping list -->
+          <section class="column" id="shopPanel">
+            <header class="col-head">
+              <span class="col-title">Shopping list</span>
+              <span class="col-count" id="shopCount">0</span>
+              <button type="button" class="col-icon" id="shopClearBtn" title="Clear checked items">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+              </button>
+            </header>
+            <form class="shop-add" id="shopAdd">
+              <input type="text" class="goal-input sm" name="item" placeholder="Add an item — e.g. 2 lb chicken thighs" autocomplete="off">
+              <button type="submit" class="btn-secondary">Add</button>
+            </form>
+            <ul class="shop-list" id="shopList"></ul>
+            <div class="fin-empty" id="shopEmpty">Nothing on the list. Recipes and meal plans can add what you’re missing.</div>
+            <div class="plan-note">Checking an item off adds it to your ingredients.</div>
+          </section>
+        </div>
+       </div>
+
+       <!-- ================= TRAINING ================= -->
+       <div class="page" data-page="gym" hidden>
+        <div class="title-row">
+          <h1 class="dash-title">Training</h1>
+          <span class="page-date" id="gymDate"></span>
+        </div>
+
+        <!-- Weekly workout progress -->
+        <section class="column week-card">
+          <div class="week-top">
+            <div>
+              <div class="gm-eyebrow">This week</div>
+              <div class="week-count"><span id="weekDone">0</span><span class="week-of"> / <span id="weekPlanned">0</span> workouts</span></div>
+            </div>
+            <div class="week-pct" id="weekPct">0%</div>
+          </div>
+          <div class="week-bar" id="weekBar"></div>
+        </section>
+
+        <div class="gym-grid">
+          <!-- Weight -->
+          <section class="column weight-card">
+            <header class="col-head">
+              <span class="col-title">Weight</span>
+              <div class="seg seg-sm" id="unitSeg" role="group" aria-label="Units">
+                <button type="button" data-unit="lb">lb</button>
+                <button type="button" data-unit="kg">kg</button>
+              </div>
+            </header>
+            <div class="weight-hero">
+              <div class="weight-num"><span id="weightNow">—</span><span class="weight-unit" id="weightUnit">lb</span></div>
+              <div class="weight-deltas" id="weightDeltas"></div>
+            </div>
+            <div class="weight-goal" id="weightGoal"></div>
+            <div class="wchart" id="weightChart"></div>
+            <form class="weight-form" id="weightForm">
+              <input class="goal-input sm" type="number" id="weightInput" step="any" min="0" placeholder="Today's weight" inputmode="decimal">
+              <input class="goal-input sm" type="date" id="weightDate">
+              <button type="submit" class="btn-primary">Log</button>
+            </form>
+            <ul class="weight-recent" id="weightRecent"></ul>
+          </section>
+
+          <div class="stack">
+            <!-- Today's workout -->
+            <section class="column" id="workoutCard">
+              <header class="col-head">
+                <span class="col-title" id="workoutTitle">Today</span>
+                <span class="col-count" id="workoutCount">0/0</span>
+                <button type="button" class="btn-ghost btn-xs" id="workoutEditBtn" title="Rename, reorder or remove exercises">Edit</button>
+              </header>
+              <div class="meter workout-meter"><div class="meter-fill meter-done" id="workoutBar"></div></div>
+              <ul class="ex-list" id="workoutList"></ul>
+              <div class="rest-note" id="restNote" hidden></div>
+              <form class="ex-add" id="workoutAdd">
+                <input class="goal-input sm" name="name" placeholder="Add exercise" autocomplete="off">
+                <input class="goal-input sm ex-sets-input" name="sets" placeholder="3 × 10" autocomplete="off">
+                <button type="submit" class="btn-secondary">Add</button>
+              </form>
+              <button type="button" class="complete-btn" id="completeBtn">Mark workout complete</button>
+            </section>
+
+            <!-- Split -->
+            <section class="column" id="splitCard">
+              <header class="col-head">
+                <span class="col-title">Weekly split</span>
+                <button type="button" class="btn-ghost btn-xs" id="splitEditBtn">Edit</button>
+              </header>
+              <div class="split-days" id="splitDays"></div>
+              <div class="split-body" id="splitBody"></div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Strength progression -->
+        <section class="column strength-card" id="strengthCard">
+          <header class="col-head">
+            <span class="col-title">Strength progress</span>
+            <select class="goal-input sm lift-select" id="liftSelect" aria-label="Exercise"></select>
+          </header>
+          <div class="strength-grid">
+            <div>
+              <div class="lift-hero" id="liftHero"></div>
+              <div class="wchart" id="liftChart"></div>
+            </div>
+            <div>
+              <div class="gm-eyebrow pr-head">Personal records</div>
+              <ul class="pr-list" id="prList"></ul>
+            </div>
+          </div>
+        </section>
+       </div>
+
+       <!-- ================= PEPTIDES ================= -->
+       <div class="page" data-page="peptides" hidden>
+        <div class="title-row">
+          <h1 class="dash-title">Peptides</h1>
+          <span class="page-date" id="pepDate"></span>
+        </div>
+        <div class="page-tools mobile-only">
+          <button type="button" class="btn-primary" id="addPeptideBtnMobile">+ Add peptide</button>
+          <button type="button" class="btn-secondary" id="pepCalcBtnMobile">Calculator</button>
+        </div>
+
+        <!-- Today's doses -->
+        <section class="column pep-today" id="pepToday"></section>
+
+        <div class="pep-grid">
+          <!-- Vials -->
+          <section class="column pep-stack-card" id="pepStack"></section>
+          <div class="stack">
+            <section class="column" id="pepSites"></section>
+            <section class="column" id="pepCheckin"></section>
+          </div>
+        </div>
+
+        <div class="pep-grid pep-grid-low">
+          <section class="column" id="pepAdherence"></section>
+          <section class="column" id="pepLog"></section>
+        </div>
+
+        <p class="pep-disclaimer">Pulse only records what you enter — it doesn’t recommend compounds or doses, and the calculator is just arithmetic. Peptides like these aren’t approved medicines; talk to a doctor before starting or changing anything.</p>
+       </div>
+      </div>
+    </div>
+
+    <button type="button" class="day-pill" id="dayPill" title="Jump to day progress">
+      <span class="day-pill-dot"></span>
+      <span class="day-pill-text" id="dayPillText">—</span>
+    </button>
+  </div>
+
+  <!-- Peptides: log a dose / edit a peptide / calculator -->
+  <div class="peek-backdrop" id="pepModal" hidden>
+    <div class="peek pep-panel" id="pepPanel" role="dialog" aria-modal="true" aria-label="Peptide"></div>
+  </div>
+
+  <!-- Journal entry popup (shared by Trades + Mental) -->
+  <div class="peek-backdrop" id="peek" hidden>
+    <div class="peek" id="peekPanel" role="dialog" aria-modal="true" aria-label="Journal entry"></div>
+  </div>
+  <div class="lightbox" id="lightbox" hidden><img alt="Full-size image"></div>
+
+  <!-- Mobile "More" pages island -->
+  <div class="sheet-backdrop sheet-bottom" id="navSheet" hidden>
+    <div class="island nav-island" role="dialog" aria-modal="true" aria-label="All pages">
+      <div class="island-head">
+        <span>All pages</span>
+        <button type="button" class="icon-btn" data-close title="Close">×</button>
+      </div>
+      <div class="nav-grid" id="navGrid"></div>
+    </div>
+  </div>
+
+  <!-- Settings island: install, API keys, backup / restore -->
+  <div class="sheet-backdrop" id="settingsSheet" hidden>
+    <div class="island settings-island" role="dialog" aria-modal="true" aria-label="Settings">
+      <div class="island-head">
+        <span>Settings</span>
+        <button type="button" class="icon-btn" data-close title="Close">×</button>
+      </div>
+      <div class="settings-body" id="settingsBody"></div>
+    </div>
+  </div>
+
+  <!-- Day progress island (opened from the bottom-right pill) -->
+  <div class="sheet-backdrop" id="dayModal" hidden>
+    <div class="island day-island" role="dialog" aria-modal="true" aria-label="Day progress">
+      <div class="island-head">
+        <span>Today’s progress</span>
+        <button type="button" class="icon-btn" data-close title="Close">×</button>
+      </div>
+      <section class="day-line" id="dayModalCard">
+        <div class="dl-top">
+          <div class="dl-left">
+            <span class="dl-phase">—</span>
+            <span class="dl-status">—</span>
+          </div>
+          <span class="dl-pct">—</span>
+        </div>
+        <div class="dl-track">
+          <div class="dl-fill"></div>
+          <div class="dl-now" hidden></div>
+        </div>
+        <div class="dl-ticks" aria-hidden="true"></div>
+        <div class="dl-foot">
+          <span class="dl-meta dl-remaining">—</span>
+          <span class="dl-meta dl-clock">--:--</span>
+          <span class="dl-meta dl-window"></span>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Bank CSV import review -->
+  <div class="peek-backdrop" id="importModal" hidden>
+    <div class="peek import-panel" id="importPanel" role="dialog" aria-modal="true" aria-label="Import transactions"></div>
+  </div>
+
+<!-- Saved data loads from IndexedDB first (js/store.js), then the app scripts run in this order.
+     Adding a script: list it here and in sw.js. -->
+<script src="js/store.js"></script>
+<script>
+  Store.boot([
+    'js/core.js',
+    'js/nutrition.js',
+    'js/mealplan.js',
+    'js/training.js',
+    'js/journals.js',
+    'js/overview.js',
+    'js/finance.js',
+    'js/peptides.js',
+    'js/privacy.js',
+    'js/app.js'
+  ]);
+</script>
+</body>
+</html>
